@@ -24,11 +24,14 @@ var channel = require('cordova/channel');
 var modulemapper = require('cordova/modulemapper');
 var urlutil = require('cordova/urlutil');
 
+
+// Added 7-31-14 Add toolbarbuttonpressed event
 function InAppBrowser() {
    this.channels = {
         'loadstart': channel.create('loadstart'),
         'loadstop' : channel.create('loadstop'),
         'loaderror' : channel.create('loaderror'),
+        'toolbarbuttonpressed' : channel.create('toolbarbuttonpressed'),
         'exit' : channel.create('exit')
    };
 }
