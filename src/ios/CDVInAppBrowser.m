@@ -153,6 +153,12 @@
     if (browserOptions.closebuttoncaption != nil) {
         [self.inAppBrowserViewController setCloseButtonTitle:browserOptions.closebuttoncaption];
     }
+    
+    // Added 7-31-14 changes the toolbar button label if configured with toolbarbutton=yes,toolbarbuttoncaption=YourButtonLabel
+    if ((browserOptions.toolbarbuttoncaption != nil) && (browserOptions.toolbarbutton)) {
+        [self.inAppBrowserViewController setToolbarButtonTitle:browserOptions.toolbarbuttoncaption];
+    }
+    
     // Set Presentation Style
     UIModalPresentationStyle presentationStyle = UIModalPresentationFullScreen; // default
     if (browserOptions.presentationstyle != nil) {
@@ -440,11 +446,24 @@
     // Also - this is required for the PDF/User-Agent bug work-around.
     self.inAppBrowserViewController = nil;
 
+    _previousStatusBarStyle = -1;
+
     if (IsAtLeastiOSVersion(@"7.0")) {
         [[UIApplication sharedApplication] setStatusBarStyle:_previousStatusBarStyle];
     }
+}
 
-    _previousStatusBarStyle = -1; // this value was reset before reapplying it. caused statusbar to stay black on ios7
+// Added 7-31-14 Sends a toolbarbuttonpressed event to cordova. Copied from function webViewDidFinishLoad
+- (void)sendToolbarButtonPressEvent
+{
+    NSLog(@"sendToolbarButtonPressEvent was called.");
+    if (self.callbackId != nil) {
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                                      messageAsDictionary:@{@"type":@"toolbarbuttonpressed"}];
+        [pluginResult setKeepCallback:[NSNumber numberWithBool:YES]];
+        
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:self.callbackId];
+    }
 }
 
 @end
@@ -511,6 +530,12 @@
 
     self.closeButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(close)];
     self.closeButton.enabled = YES;
+    
+    // Added 7-31-14 Adds a toolbar button if toolbarbutton=yes
+    if(_browserOptions.toolbarbutton) {
+        self.toolbarButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemDone target:self action:@selector(toolbarButtonPressed)];
+        self.toolbarButton.enabled = YES;
+    }
 
     UIBarButtonItem* flexibleSpaceButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace target:nil action:nil];
 
@@ -575,7 +600,12 @@
     self.backButton.enabled = YES;
     self.backButton.imageInsets = UIEdgeInsetsZero;
 
-    [self.toolbar setItems:@[self.closeButton, flexibleSpaceButton, self.backButton, fixedSpaceButton, self.forwardButton]];
+    // Added 7-31-14 Adds a toolbar buton to the toolbar if toolbarbutton=yes
+    if(_browserOptions.toolbarbutton) {
+        [self.toolbar setItems:@[self.closeButton, flexibleSpaceButton, self.toolbarButton, flexibleSpaceButton, self.backButton, fixedSpaceButton, self.forwardButton]];
+    } else {
+        [self.toolbar setItems:@[self.closeButton, flexibleSpaceButton, self.backButton, fixedSpaceButton, self.forwardButton]];
+    }
 
     self.view.backgroundColor = [UIColor grayColor];
     [self.view addSubview:self.toolbar];
@@ -601,6 +631,22 @@
     [items replaceObjectAtIndex:0 withObject:self.closeButton];
     [self.toolbar setItems:items];
 }
+
+// Added 7-31-14 Function that creates a new toolbar button with the label configured by toolbarbuttoncaption=YourLabel. Copied from function setCloseButtonTitle
+- (void)setToolbarButtonTitle:(NSString*)title
+{
+    // the advantage of using UIBarButtonSystemItemDone is the system will localize it for you automatically
+    // but, if you want to set this yourself, knock yourself out (we can't set the title for a system Done button, so we have to create a new one)
+    self.toolbarButton = nil;
+    self.toolbarButton = [[UIBarButtonItem alloc] initWithTitle:title style:UIBarButtonItemStyleBordered target:self action:@selector(toolbarButtonPressed)];
+    self.toolbarButton.enabled = YES;
+    self.toolbarButton.tintColor = [UIColor colorWithRed:60.0 / 255.0 green:136.0 / 255.0 blue:230.0 / 255.0 alpha:1];
+    
+    NSMutableArray* items = [self.toolbar.items mutableCopy];
+    [items replaceObjectAtIndex:2 withObject:self.toolbarButton];
+    [self.toolbar setItems:items];
+}
+
 
 - (void)showLocationBar:(BOOL)show
 {
@@ -749,6 +795,18 @@
         }
     });
 }
+
+// Added 7-31-14 Fucntion that fires when toolbar button is pressed. This function calls sendToolbarButtonPressEvent
+- (void)toolbarButtonPressed
+{
+    NSLog(@"toolbarButtonPressed was called.");
+    // Not sure if this needs to be done here, just copied code from close function
+    [CDVUserAgentUtil releaseLock:&_userAgentLockToken];
+    if ((self.navigationDelegate != nil) && [self.navigationDelegate respondsToSelector:@selector(sendToolbarButtonPressEvent)]) {
+        [self.navigationDelegate sendToolbarButtonPressEvent];
+    }
+}
+
 
 - (void)navigateTo:(NSURL*)url
 {
@@ -909,7 +967,9 @@
         // default values
         self.location = YES;
         self.toolbar = YES;
+        self.toolbarbutton = NO;
         self.closebuttoncaption = nil;
+        self.toolbarbuttoncaption = nil;
         self.toolbarposition = kInAppBrowserToolbarBarPositionBottom;
         self.clearcache = NO;
         self.clearsessioncache = NO;
