@@ -19,6 +19,6 @@
 
 # org.apache.cordova.inappbrowser
 
-This version supports an optional toolbar button that sits to the right of the close button. See main docs and option `toolbarbutton` and option `toolbarbuttoncaption`. Also see event `toolbarbuttonpressed`.
+This version supports an optional toolbar button that sits to the right of the close button. See main docs and option `toolbarbutton` and option `toolbarbuttoncaption`. Also see event `toolbarbuttonpressed`. Only available on IOS.
 
 Plugin documentation with toolbar button: [doc/index.md](doc/index.md)
