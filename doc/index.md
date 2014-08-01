@@ -61,7 +61,9 @@ instance, or the system browser.
     - __clearsessioncache__: set to `yes` to have the session cookie cache cleared before the new window is opened
 
     iOS only:
-
+    
+    - __toolbarbutton__: Set to `yes` or `no` (default is `no`). Turns on/off an additional toolbar button that sits to the right of the close button in the toolbar. This button fires a toolbarbuttonpressed event.
+    - __toolbarbuttoncaption__: set to a string to use as the __Done__ button's caption. Note that you need to localize this value yourself.
     - __closebuttoncaption__: set to a string to use as the __Done__ button's caption. Note that you need to localize this value yourself.
     - __disallowoverscroll__: Set to `yes` or `no` (default is `no`). Turns on/off the UIWebViewBounce property.
     - __hidden__: set to `yes` to create the browser and load the page, but not show it. The loadstop event fires when loading is complete. Omit or set to `no` (default) to have the browser open and load normally.
@@ -149,6 +151,7 @@ The object returned from a call to `window.open`.
   - __loadstart__: event fires when the `InAppBrowser` starts to load a URL.
   - __loadstop__: event fires when the `InAppBrowser` finishes loading a URL.
   - __loaderror__: event fires when the `InAppBrowser` encounters an error when loading a URL.
+  - __toolbarbuttonpressed__: event fires when the user presses the toolbarbutton. toolbarbutton option must be set to `yes`.
   - __exit__: event fires when the `InAppBrowser` window is closed.
 
 - __callback__: the function that executes when the event fires. The function is passed an `InAppBrowserEvent` object as a parameter.
@@ -175,6 +178,11 @@ The object returned from a call to `window.open`.
 
     var ref = window.open('http://apache.org', '_blank', 'location=yes');
     ref.addEventListener('loadstart', function(event) { alert(event.url); });
+    
+### Quick Example toolbarbutton
+
+    var ref = window.open('http://apache.org', '_blank', 'location=yes');
+    ref.addEventListener('toolbarbuttonpressed', function(event) { alert('Button Pressed'); });
 
 ## removeEventListener
 
