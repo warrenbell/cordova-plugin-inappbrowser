@@ -35,6 +35,8 @@
 - (void)open:(CDVInvokedUrlCommand*)command;
 - (void)close:(CDVInvokedUrlCommand*)command;
 - (void)injectScriptCode:(CDVInvokedUrlCommand*)command;
+// Added 8-2-14 function can be called via js to hide the browser
+- (void)hide:(CDVInvokedUrlCommand*)command;
 - (void)show:(CDVInvokedUrlCommand*)command;
 
 
@@ -44,8 +46,10 @@
 
 @property (nonatomic, assign) BOOL location;
 @property (nonatomic, assign) BOOL toolbar;
+// Added 7-31-14 New toolbar button option toolbarbutton=yes|no
 @property (nonatomic, assign) BOOL toolbarbutton;
 @property (nonatomic, copy) NSString* closebuttoncaption;
+// Added 7-31-14 New toolbar button caption option toolbarbuttoncaption=yourButtonLabel
 @property (nonatomic, copy) NSString* toolbarbuttoncaption;
 @property (nonatomic, copy) NSString* toolbarposition;
 @property (nonatomic, assign) BOOL clearcache;
@@ -90,6 +94,8 @@
 @property (nonatomic) NSURL* currentURL;
 
 - (void)close;
+// Added 8-2-14 adds the ability to hide the browser
+- (void)hide;
 - (void)navigateTo:(NSURL*)url;
 - (void)showLocationBar:(BOOL)show;
 - (void)showToolBar:(BOOL)show : (NSString *) toolbarPosition;
