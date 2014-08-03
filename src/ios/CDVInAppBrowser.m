@@ -209,6 +209,16 @@
     }
 }
 
+// Added 8-2-14 adds the ability to hide the browser using js
+- (void)hide:(CDVInvokedUrlCommand*)command
+{
+    if (self.inAppBrowserViewController == nil) {
+        NSLog(@"IAB.hide() called but it was already closed.");
+        return;
+    }
+    [self.inAppBrowserViewController hide];
+}
+
 - (void)show:(CDVInvokedUrlCommand*)command
 {
     if (self.inAppBrowserViewController == nil) {
@@ -452,6 +462,18 @@
         [[UIApplication sharedApplication] setStatusBarStyle:_previousStatusBarStyle];
     }
 }
+
+// Added 8-2-14 adds the ability to hide the browser using js
+// Could fire a hide event here similar to the close function
+- (void)browserHide
+{
+    _previousStatusBarStyle = -1;
+    
+    if (IsAtLeastiOSVersion(@"7.0")) {
+        [[UIApplication sharedApplication] setStatusBarStyle:_previousStatusBarStyle];
+    }
+}
+
 
 // Added 7-31-14 Sends a toolbarbuttonpressed event to cordova. Copied from function webViewDidFinishLoad
 - (void)sendToolbarButtonPressEvent
@@ -776,6 +798,29 @@
 {
     return UIStatusBarStyleDefault;
 }
+
+// Added 8-2-14 adds the ability to hide the browser using js and then call show using js. Browser should be in the same state
+// changed dismissViewControllerAnimated:YES to dismissViewControllerAnimated:NO so that we don't get the "Attempt to present ... while a presentation is in progress
+// error from two views stepping on each other
+- (void)hide
+{
+    //[CDVUserAgentUtil releaseLock:&_userAgentLockToken];
+    //self.currentURL = nil;
+    
+    if ((self.navigationDelegate != nil) && [self.navigationDelegate respondsToSelector:@selector(browserHide)]) {
+        [self.navigationDelegate browserHide];
+    }
+    
+    // Run later to avoid the "took a long time" log message.
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([self respondsToSelector:@selector(presentingViewController)]) {
+            [[self presentingViewController] dismissViewControllerAnimated:NO completion:nil];
+        } else {
+            [[self parentViewController] dismissViewControllerAnimated:NO completion:nil];
+        }
+    });
+}
+
 
 - (void)close
 {
