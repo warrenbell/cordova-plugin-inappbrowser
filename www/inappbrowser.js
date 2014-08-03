@@ -36,6 +36,7 @@ function InAppBrowser() {
    };
 }
 
+// Added 8-2-14 add hide function
 InAppBrowser.prototype = {
     _eventHandler: function (event) {
         if (event.type in this.channels) {
@@ -44,6 +45,9 @@ InAppBrowser.prototype = {
     },
     close: function (eventname) {
         exec(null, null, "InAppBrowser", "close", []);
+    },
+    hide: function (eventname) {
+        exec(null, null, "InAppBrowser", "hide", []);
     },
     show: function (eventname) {
       exec(null, null, "InAppBrowser", "show", []);
