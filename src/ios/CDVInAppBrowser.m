@@ -834,9 +834,9 @@
     // Run later to avoid the "took a long time" log message.
     dispatch_async(dispatch_get_main_queue(), ^{
         if ([self respondsToSelector:@selector(presentingViewController)]) {
-            [[self presentingViewController] dismissViewControllerAnimated:YES completion:nil];
+            [[self presentingViewController] dismissViewControllerAnimated:NO completion:nil];
         } else {
-            [[self parentViewController] dismissViewControllerAnimated:YES completion:nil];
+            [[self parentViewController] dismissViewControllerAnimated:NO completion:nil];
         }
     });
 }
